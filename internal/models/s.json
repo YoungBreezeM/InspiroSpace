@@ -1,0 +1,33 @@
+{
+    "message": {
+        "id": "",
+        "author": {
+            "role": "",
+            "name": null,
+            "metadata": {}
+        },
+        "create_time": 0,
+        "update_time": null,
+        "content": {
+            "content_type": "",
+            "parts": null
+        },
+        "status": "",
+        "end_turn": false,
+        "weight": 0,
+        "metadata": {
+            "finish_details": {
+                "type": "",
+                "stop_tokens": null
+            },
+            "is_complete": false,
+            "message_type": "",
+            "model_slug": "",
+            "parent_id": "",
+            "timestamp_": ""
+        },
+        "recipient": ""
+    },
+    "conversation_id": "",
+    "error": "401 Unauthorized"
+}
