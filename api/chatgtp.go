@@ -100,19 +100,32 @@ func (a *Api) SubChat(c *gin.Context) {
 
 }
 
+func sendNotifyMsg(c *gin.Context, msg string) {
+	if _, err := c.Writer.WriteString(fmt.Sprintf("data: %s\n\n", models.NewChatRespErr(msg))); err != nil {
+		log.Error("write to client", err)
+	}
+	if _, err := c.Writer.WriteString(fmt.Sprintf("data: %s\n\n", "[DONE]")); err != nil {
+		log.Error("write to client", err)
+	}
+	c.Writer.Flush()
+}
+
 func (a *Api) NotifyChat(c *gin.Context) {
 	c.Header("Content-Type", "text/event-stream")
 	//
 	chatId := c.Param("chat_id")
+	if len(chatId) <= 0 {
+		sendNotifyMsg(c, "chatId 不存在")
+		return
+	}
+
+	if a.cq == nil {
+		sendNotifyMsg(c, "chatId 位注册")
+		return
+	}
 
 	if chatId != a.cq.ChatId {
-		if _, err := c.Writer.WriteString(fmt.Sprintf("data: %s\n\n", models.NewChatRespErr("请求不存在"))); err != nil {
-			log.Error("write to client", err)
-		}
-		if _, err := c.Writer.WriteString(fmt.Sprintf("data: %s\n\n", "[DONE]")); err != nil {
-			log.Error("write to client", err)
-		}
-		c.Writer.Flush()
+		sendNotifyMsg(c, "请求不存在")
 		return
 	}
 
