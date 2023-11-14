@@ -76,8 +76,8 @@ func (a *Api) SubChat(c *gin.Context) {
 			select {
 			case <-t.C:
 				log.Warnf("chat id %s is timeout", a.cq.ChatId)
-				a.cq = nil
 				a.cq.Unlock()
+				a.cq = nil
 				return
 			case <-e:
 				log.Info("start read chatgtp content")
