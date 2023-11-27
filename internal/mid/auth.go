@@ -45,7 +45,7 @@ func (m *Mid) Auth(c *gin.Context) {
 		c.JSON(200, models.R[string]{
 			Status:  401,
 			Data:    "",
-			Message: "获取key 失败",
+			Message: "链接已过期,请重新获取链接!",
 		})
 		c.Abort()
 		return

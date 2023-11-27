@@ -1,9 +1,9 @@
 
 syntax = "proto3";
 
-package api;
+package pkg;
 
-option go_package = "./pb";
+option go_package = "./chatgtp_grpc";
 
 // The service definition.
 service ChatGTPService{

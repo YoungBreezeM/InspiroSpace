@@ -1,0 +1,14 @@
+{
+    "id":"u",
+    "describe":"xxxx",
+    "apis":[
+        {
+            "method":"get",
+            "path":"/",
+            "status":"",
+            "version":""
+        }
+    ],
+    "ctime":"",
+    "uptime":""
+}

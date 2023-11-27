@@ -2,9 +2,9 @@ package api
 
 import (
 	"context"
-	"easygin/api/pb"
 	"easygin/internal/log"
 	"easygin/internal/models"
+	cgg "easygin/pkg/chatgtp_grpc"
 	"fmt"
 	"io"
 	"sync"
@@ -137,7 +137,7 @@ func (a *Api) NotifyChat(c *gin.Context) {
 	}()
 
 	a.cq.E <- struct{}{}
-	chatReq := pb.ChatRequest{
+	chatReq := cgg.ChatRequest{
 		ChatId:          chatId,
 		Token:           a.conf.ChatGtpConfig.Token,
 		ConversationId:  "",
@@ -152,7 +152,7 @@ func (a *Api) NotifyChat(c *gin.Context) {
 		chatReq.ParentMessageId = a.cq.ParentMessageId
 	}
 
-	chatReq.Messages = append(chatReq.Messages, &pb.ChatRequestMessage{
+	chatReq.Messages = append(chatReq.Messages, &cgg.ChatRequestMessage{
 		Role:    "user",
 		Content: a.cq.Prompt,
 	})
@@ -164,7 +164,7 @@ func (a *Api) NotifyChat(c *gin.Context) {
 	}
 	defer conn.Close()
 
-	client := pb.NewChatGTPServiceClient(conn)
+	client := cgg.NewChatGTPServiceClient(conn)
 	// Contact the server and print out its response.
 
 	r, err := client.Chat(context.Background(), &chatReq)

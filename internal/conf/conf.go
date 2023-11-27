@@ -29,7 +29,7 @@ type RedisConfig struct {
 }
 
 type WechatConfig struct {
-	Token       string `yaml:"wechat"`
+	Token       string `yaml:"token"`
 	CallbackUrl string `yaml:"callback_url"`
 }
 

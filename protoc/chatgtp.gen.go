@@ -1,3 +1,3 @@
 package protoc
 
-//go:generate protoc chatgtp.proto --go_out=../api  --go-grpc_out=../api
+//go:generate protoc chatgtp.proto --go_out=../pkg  --go-grpc_out=../pkg

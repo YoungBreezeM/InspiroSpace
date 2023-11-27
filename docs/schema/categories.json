@@ -1,0 +1,12 @@
+{
+    "id":"uuid",
+    "owner":"uid",
+    "name":"",
+    "parent":"uid",
+    "type":"text,chat",
+    "children":[
+        "uid"
+    ],
+    "ctime":"",
+    "uptime":""
+}

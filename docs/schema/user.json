@@ -1,0 +1,10 @@
+{
+    "id":"uuid",
+    "username":"",
+    "login_type":"wx",
+    "own_app":[
+        "sid"
+    ],
+    "ctime":"",
+    "uptime":""
+}

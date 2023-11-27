@@ -4,7 +4,7 @@
 // - protoc             v4.23.4
 // source: chatgtp.proto
 
-package pb
+package chatgtp_grpc
 
 import (
 	context "context"
@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	ChatGTPService_Chat_FullMethodName = "/api.ChatGTPService/Chat"
+	ChatGTPService_Chat_FullMethodName = "/pkg.ChatGTPService/Chat"
 )
 
 // ChatGTPServiceClient is the client API for ChatGTPService service.
@@ -124,7 +124,7 @@ func (x *chatGTPServiceChatServer) Send(m *ChatReply) error {
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var ChatGTPService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "api.ChatGTPService",
+	ServiceName: "pkg.ChatGTPService",
 	HandlerType: (*ChatGTPServiceServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
