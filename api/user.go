@@ -25,7 +25,7 @@ func (a *Api) GetToken(c *gin.Context) {
 
 	token := mid.Token{
 		OpenId: "test",
-		Key:    a.S.CreateUser("test"),
+		Key:    a.service.CreateUser("test"),
 	}
 
 	tokenStr, err := utils.CreateToken(token, a.conf.AppConfig.TokenKey)

@@ -7,8 +7,6 @@ import (
 	cgg "easygin/pkg/chatgtp_grpc"
 	"fmt"
 	"io"
-	"sync"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
@@ -19,27 +17,17 @@ var (
 	stopTimer = make(chan struct{})
 )
 
-type ApiChatRequest struct {
-	ChatId          string `json:"chat_id"`
-	Prompt          string `json:"prompt"`
-	ParentMessageId string `json:"parent_message_id"`
-	ConversationId  string `json:"conversation_id"`
-	T               *time.Timer
-	E               chan struct{}
-	sync.Mutex
-}
-
 func (a *Api) RegisterChatGTPRoute(e *gin.Engine) {
 	rg := e.Group("/chatgtp")
 
 	rg.GET("/event/:chat_id", a.NotifyChat)
 
-	rg.POST("/v1/chat/completions", a.M.Auth, a.SubChat)
+	rg.POST("/v1/chat/completions", a.mid.Auth, a.SubChat)
 
 }
 
 func (a *Api) SubChat(c *gin.Context) {
-	req := ApiChatRequest{}
+	req := models.ApiChatRequest{}
 	var openId string
 	if o, ok := c.Get("openId"); ok {
 		openId = o.(string)
@@ -54,43 +42,41 @@ func (a *Api) SubChat(c *gin.Context) {
 		return
 	}
 
-	a.cq = &req
-	if !a.cq.TryLock() {
+	//参数校验
+	if err := a.validate.Struct(&req); err != nil {
 		c.JSON(200, models.R[string]{
-			Status:  503,
+			Status:  403,
 			Data:    "",
-			Message: "服务器繁忙，请稍后再试！",
+			Message: err.Error(),
 		})
 		return
 	}
 
-	a.cq.T = time.NewTimer(10 * time.Second)
-	a.cq.E = make(chan struct{})
-	//occupancy clear
-	go func(t *time.Timer, e chan struct{}) {
-		defer func() {
-			t.Stop()
-		}()
-
-		for {
-			select {
-			case <-t.C:
-				log.Warnf("chat id %s is timeout", a.cq.ChatId)
-				a.cq.Unlock()
-				a.cq = nil
-				return
-			case <-e:
-				log.Info("start read chatgtp content")
-				return
-			}
-
-		}
-
-	}(a.cq.T, a.cq.E)
-
-	if err := a.S.StoreChat(openId, req.Prompt); err != nil {
-		log.Error(err)
+	token, err := a.service.GetToken()
+	if err != nil {
+		c.JSON(200, models.R[string]{
+			Status:  503,
+			Data:    "",
+			Message: "服务器资源紧张，请稍后再试！",
+		})
+		return
 	}
+	req.Token = token
+
+	if err = a.service.SubChat(req); err != nil {
+		c.JSON(200, models.R[string]{
+			Status:  500,
+			Data:    "",
+			Message: err.Error(),
+		})
+		return
+	}
+
+	go func() {
+		if err := a.service.StoreChat(openId, req.Prompt); err != nil {
+			log.Error(err)
+		}
+	}()
 
 	c.JSON(200, models.R[string]{
 		Status:  200,
@@ -119,45 +105,25 @@ func (a *Api) NotifyChat(c *gin.Context) {
 		return
 	}
 
-	if a.cq == nil {
-		sendNotifyMsg(c, "chatId 位注册")
+	req, err := a.service.NotifyChat(chatId)
+	if err != nil {
+		sendNotifyMsg(c, err.Error())
 		return
 	}
 
-	if chatId != a.cq.ChatId {
-		sendNotifyMsg(c, "请求不存在")
-		return
-	}
-
-	defer func() {
-		if a.cq != nil {
-			a.cq.Unlock()
-			a.cq = nil
-		}
-	}()
-
-	a.cq.E <- struct{}{}
 	chatReq := cgg.ChatRequest{
-		ChatId:          chatId,
-		Token:           a.conf.ChatGtpConfig.Token,
-		ConversationId:  "",
-		ParentMessageId: "",
-	}
-
-	if len(a.cq.ConversationId) > 0 {
-		chatReq.ConversationId = a.cq.ConversationId
-	}
-
-	if len(a.cq.ParentMessageId) > 0 {
-		chatReq.ParentMessageId = a.cq.ParentMessageId
+		ChatId:          req.ChatId,
+		Token:           req.Token,
+		ConversationId:  req.ConversationId,
+		ParentMessageId: req.ParentMessageId,
 	}
 
 	chatReq.Messages = append(chatReq.Messages, &cgg.ChatRequestMessage{
 		Role:    "user",
-		Content: a.cq.Prompt,
+		Content: req.Prompt,
 	})
 	//
-	conn, err := grpc.Dial(a.S.ChatGtpConfig.Addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(a.service.ChatGtpConfig.Addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Error(fmt.Sprintf("did not connect %v", err))
 		return

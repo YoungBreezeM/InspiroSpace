@@ -11,6 +11,14 @@ import (
 //
 //   "Set quicktype target language"
 
+type ApiChatRequest struct {
+	ChatId          string `json:"chat_id" validate:"required"`
+	Prompt          string `json:"prompt" validate:"required"`
+	ParentMessageId string `json:"parent_message_id"`
+	ConversationId  string `json:"conversation_id"`
+	Token           string `json:"token"`
+}
+
 type ChatGTPResp struct {
 	Message        Message     `json:"message"`
 	ConversationID string      `json:"conversation_id"`

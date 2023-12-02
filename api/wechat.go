@@ -105,7 +105,7 @@ func (a *Api) Notify(c *gin.Context) {
 
 		token := mid.Token{
 			OpenId: callbackMsg.FromUserName,
-			Key:    a.S.CreateUser(callbackMsg.FromUserName),
+			Key:    a.service.CreateUser(callbackMsg.FromUserName),
 		}
 
 		tokenStr, err := utils.CreateToken(token, a.conf.AppConfig.TokenKey)

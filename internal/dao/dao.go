@@ -36,9 +36,8 @@ func InitMysql(c *conf.MysqlConfig) (db *gorm.DB, err error) {
 
 func InitRedis(c *conf.RedisConfig) (r *redis.Client, err error) {
 	r = redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%d", c.Host, c.Port),
-		Password: c.Password,
-		DB:       c.DB,
+		Addr: fmt.Sprintf("%s:%d", c.Host, c.Port),
+		DB:   c.DB,
 	})
 
 	if _, err = r.Ping().Result(); err != nil {

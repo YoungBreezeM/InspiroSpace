@@ -6,21 +6,26 @@ import (
 	"easygin/internal/service"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 type Api struct {
-	S    *service.Service
-	conf *conf.Config
-	M    *mid.Mid
-	cq   *ApiChatRequest
+	service  *service.Service
+	conf     *conf.Config
+	mid      *mid.Mid
+	validate *validator.Validate
 }
 
 func InitApi(s *service.Service, e *gin.Engine, conf *conf.Config, m *mid.Mid) {
 
-	a := Api{s, conf, m, nil}
+	a := Api{
+		s,
+		conf,
+		m,
+		validator.New(),
+	}
 	//register route
 	a.RegisterWechatRoute(e)
 	a.RegisterChatGTPRoute(e)
-	a.RegisterHelloRoute(e)
 	a.RegisterUserRoute(e)
 }
