@@ -40,7 +40,7 @@ func (m *Mid) Auth(c *gin.Context) {
 		return
 	}
 
-	s, err := m.S.Redis.Get(t.OpenId).Result()
+	s, err := m.S.Redis.Get(c, t.OpenId).Result()
 	if err != nil {
 		c.JSON(200, models.R[string]{
 			Status:  401,

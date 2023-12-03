@@ -7,15 +7,14 @@ import (
 	cgg "easygin/pkg/chatgtp_grpc"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-var (
-	stopTimer = make(chan struct{})
-)
+var ()
 
 func (a *Api) RegisterChatGTPRoute(e *gin.Engine) {
 	rg := e.Group("/chatgtp")
@@ -23,6 +22,8 @@ func (a *Api) RegisterChatGTPRoute(e *gin.Engine) {
 	rg.GET("/event/:chat_id", a.NotifyChat)
 
 	rg.POST("/v1/chat/completions", a.mid.Auth, a.SubChat)
+
+	rg.POST("/v1/chat/completions/test", a.SubChatTest)
 
 }
 
@@ -52,7 +53,7 @@ func (a *Api) SubChat(c *gin.Context) {
 		return
 	}
 
-	token, err := a.service.GetToken()
+	token, err := a.service.GetToken(c)
 	if err != nil {
 		c.JSON(200, models.R[string]{
 			Status:  503,
@@ -63,7 +64,7 @@ func (a *Api) SubChat(c *gin.Context) {
 	}
 	req.Token = token
 
-	if err = a.service.SubChat(req); err != nil {
+	if err = a.service.SubChat(c, &req); err != nil {
 		c.JSON(200, models.R[string]{
 			Status:  500,
 			Data:    "",
@@ -86,6 +87,14 @@ func (a *Api) SubChat(c *gin.Context) {
 
 }
 
+func (a *Api) SubChatTest(c *gin.Context) {
+	c.Header("Content-Type", "text/event-stream")
+	for i := 0; i < 10; i++ {
+		time.Sleep(time.Second * 1)
+		sendNotifyMsg(c, "hello")
+	}
+}
+
 func sendNotifyMsg(c *gin.Context, msg string) {
 	if _, err := c.Writer.WriteString(fmt.Sprintf("data: %s\n\n", models.NewChatRespErr(msg))); err != nil {
 		log.Error("write to client", err)
@@ -105,11 +114,13 @@ func (a *Api) NotifyChat(c *gin.Context) {
 		return
 	}
 
-	req, err := a.service.NotifyChat(chatId)
+	req, err := a.service.NotifyChat(c, chatId)
 	if err != nil {
 		sendNotifyMsg(c, err.Error())
 		return
 	}
+
+	log.Info(req)
 
 	chatReq := cgg.ChatRequest{
 		ChatId:          req.ChatId,

@@ -82,3 +82,13 @@ func (c *ChatGTPResp) ToString() string {
 	return string(b)
 
 }
+
+func (a *ApiChatRequest) MarshalBinary() ([]byte, error) {
+	return json.Marshal(a)
+}
+
+func (a *ApiChatRequest) UnmarshalBinary(data []byte) error {
+	// Implement the binary unmarshaling logic for ApiChatRequest
+	// For example, you can use encoding/binary package to convert binary to fields
+	return json.Unmarshal(data, &a)
+}

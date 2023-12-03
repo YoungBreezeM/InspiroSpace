@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"easygin/internal/conf"
 	"easygin/internal/dao"
 	"fmt"
@@ -23,11 +24,11 @@ func TestCreateToken(t *testing.T) {
 		Redis: r,
 	}
 	s := Service{Dao: &d}
-	s.SetToken("hello000")
+	s.SetToken(context.Background(), "hello000")
 
 	for i := 0; i < 100; i++ {
 		go func(index int) {
-			token, err := s.GetToken()
+			token, err := s.GetToken(context.Background())
 			if err != nil {
 				log.Printf("%d error:%+v\n", index, err)
 				return

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/pkg/errors"
@@ -40,7 +40,7 @@ func InitRedis(c *conf.RedisConfig) (r *redis.Client, err error) {
 		DB:   c.DB,
 	})
 
-	if _, err = r.Ping().Result(); err != nil {
+	if _, err = r.Ping(context.Background()).Result(); err != nil {
 		err = errors.WithStack(err)
 	}
 
